@@ -34,7 +34,7 @@ def subsetfasta(fasta,numLines):#For creating subste input
     outfile.close()
 
 def main():
-#    subsetfasta(multifasta,4)
+    subsetfasta(multifasta,10000)
 #    if checkiffasta(multifasta):
 #        print("Yes")
 
