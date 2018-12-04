@@ -1,37 +1,42 @@
-#/bin/env python
+#!/usr/bin/python
 
-import getopt
+import argparse
 import sys
-import os
-//Test
-def main(argv):
-    # check arguments and options
-    try:
-        opts, args = getopt.getopt(argv, "hd:", ["help", "database"])
-        # show usage printout if something is bad
-        for opt, arg in opts:
-            if opt in ("-h, --help"):
-                printUsage()
-                sys.exit(2)
-            if opt in ("-d, --db"):
-                print "Supposed to create db '" + arg +"'"
-        MAIN_PROGRAM_METHOD(args[0])
-    except getopt.GetoptError:
-        printUsage(True)
-        sys.exit(2)
-    except IndexError:
-        printUsage(True)
-        sys.exit(2)
+import string
 
-def printUsage(error = False):
-    if error:
-        print "Unknown option or missing argument."
-    print """
-    Usage: scriptname.py [options] <xml file>
+parser=argparse.ArgumentParser(description='''Creates simualted sequencing reads given the fasta files of organisms to start with using GPU''', epilog="""Epilog!!!""")
+parser.add_argument("fastaFile", type=argparse.FileType('r'), help="starting fasta file")
+parser.add_argument('--rlen', type=int, default=200, help='Desired length of simulated reads')
+parser.add_argument('--thput', type=int, default=7, help='Desired throughput in GBs')
+parser.add_argument('--qual', type=int, default=20, help='Desired average read quality')
+#parser.add_argument('onoff', nargs='*', default=[1, 2, 3], help='this thing if in the command does this')
+#parser.add_argument('onoff2', nargs='*', default=[1, 2, 3], help='this thing if in the command does this2')
+args=parser.parse_args()
+multifasta=args.fastaFile.read()
 
-    -h              show this help
-    -d              use specific database
-    """
+def checkiffasta(fasta):#Need to improve this one
+    if fasta.startswith(">"):
+        return True
+    else:
+        return False
 
-if __name__ == "__main__":
-    main(sys.argv[1:])
+def subsetfasta(fasta,numLines):#For creating subste input
+    outfile = open("subset-0-" + str(numLines), "w")
+    gsplit = fasta.split(">")[1:]
+    fastas = []
+    for i in range(0, len(gsplit) - 1):
+        if gsplit[i].count("\n") > 1:
+            fastas.append(">" + gsplit[i])
+        else:
+            fastas.append(">" + gsplit[i] + gsplit[i+1])
+    for fast in fastas[:numLines + 1]:
+        outfile.write(fast)
+    outfile.close()
+
+def main():
+#    subsetfasta(multifasta,4)
+#    if checkiffasta(multifasta):
+#        print("Yes")
+
+
+main()
