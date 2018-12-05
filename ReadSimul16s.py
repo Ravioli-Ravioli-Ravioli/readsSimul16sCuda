@@ -6,6 +6,7 @@ import string
 import math
 import time
 from random import randint
+from numba import jit
 
 parser = argparse.ArgumentParser(description='''A program that creates simulated 16S sequencing reads from 16S sequences, utilizing the power of GPUs for creating reads''', epilog = """Not yet ready for research use, for grad class requirements only!""")
 parser.add_argument("fastaFile", type = argparse.FileType('r'), help = "starting fasta file")
@@ -47,40 +48,38 @@ def fixFormatting(fasta): #Fixes double greater than sign from headers in a fast
             fastas.append(newline)
     return fastas
 
-def fandr(seq,rlen,overlap): #Does the randomization, outputs f and r, called by createReads
-    ampSize = ((rlen - overlap) * 2) + overlap
-    headless = ''.join(seq.split("\n")[1:])
-    if len(headless) >= ampSize + overlap:
-        seedStart = randint(0, len(headless) - ampSize)
-        amp = headless[seedStart:seedStart + ampSize]
-        forward = amp[0:rlen]
-        reverse = amp[rlen - overlap:]
-        return [forward, reverse]
-    else:
-        pass
+#@jit
+def fandri(seqlen,rlen,overlap):
+    ampSize = ((rlen - overlap)*2) + overlap
+    seedStart = randint(0, seqlen - ampSize)
+    fstart = seedStart
+    fend = seedStart + rlen
+    rstart = fend - overlap
+    rend = rstart + rlen
+    return [fstart, fend, rstart, rend]
+
+def create():
+    print("yes")
 
 def createReads(fasta,readlen,tput,outfile,over): #Returns a list containing list containing forward and reverse sequences randomly generated
-    allSeqs = []
     fnrs = []
+    pairStats = []
     numOrg = len(fasta)
-    numReads = (tput * 1000000000)/readlen #1B
-#    numReads = (tput * 100000000)/readlen #100M
-#    numReads = (tput * 10000000)/readlen #10M
-#    numReads = (tput * 1000000)/readlen #1M
-#    numReads = (tput * 100000)/readlen #100K
-#    numReads = (tput * 10000)/readlen #10K
-#    numReads = (tput * 1000)/readlen #1K
-    numSeeds = math.ceil(numReads/2)
-    rpairsPerOrg = numSeeds/numOrg
+#    numReadPairs = math.ceil(((tput * 1000000000)/readlen)/2) #1B
+#    numReadPairs = math.ceil(((tput * 100000000)/readlen)/2) #100M
+#    numReadPairs = math.ceil(((tput * 10000000)/readlen)/2) #10M
+    numReadPairs = math.ceil(((tput * 1000000)/readlen)/2) #1M
+#    numReadPairs = math.ceil(((tput * 100000)/readlen)/2) #100K
+#    numReadPairs = math.ceil(((tput * 10000)/readlen)/2) #10K
+#    numReadPairs = math.ceil(((tput * 1000)/readlen)/2) #1K
+    pairsPerOrg = math.ceil(numReadPairs/numOrg)
     for seq in fasta:
-        allSeqs += int(rpairsPerOrg) * [seq]
-    counter = 0 #For debugging
-    for seq in allSeqs:
-        counter += 1
-        print("Run completion: {0:.2f} percent.".format((float(counter)/len(allSeqs))*100))
-        fnr = fandr(seq,readlen,over)
-        fnrs.append(fnr)
-    return fnrs
+        headless = ''.join(seq.split("\n")[1:])
+        seqlen = len(headless)
+        if seqlen >= (readlen*2):
+            for i in range(0, pairsPerOrg): 
+                pairStats.append(fandri(seqlen,readlen,over))
+    print(len(pairStats))
 
 def main():
     if checkiffasta(multifasta):
