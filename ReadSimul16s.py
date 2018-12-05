@@ -50,32 +50,38 @@ def fixFormatting(fasta): #Fixes double greater than sign from headers in a fast
 def fandr(seq,rlen,overlap): #Does the randomization, outputs f and r, called by createReads
     ampSize = ((rlen - overlap) * 2) + overlap
     headless = ''.join(seq.split("\n")[1:])
-    seedStart = randint(0, len(headless) - ampSize)
-    amp = headless[seedStart:seedStart + ampSize]
-    forward = amp[0:rlen]
-    reverse = amp[rlen - overlap:]
-    return [forward, reverse]
+    if len(headless) >= ampSize + overlap:
+        seedStart = randint(0, len(headless) - ampSize)
+        amp = headless[seedStart:seedStart + ampSize]
+        forward = amp[0:rlen]
+        reverse = amp[rlen - overlap:]
+        return [forward, reverse]
+    else:
+        pass
 
 def createReads(fasta,readlen,tput,outfile,over): #Returns a list containing list containing forward and reverse sequences randomly generated
     allSeqs = []
     fnrs = []
     numOrg = len(fasta)
-    numReads = (tput * 1000000000)/readlen
+#    numReads = (tput * 1000000000)/readlen
+    numReads = (tput * 100000000)/readlen #For debugging
     numSeeds = math.ceil(numReads/2)
     rpairsPerOrg = numSeeds/numOrg
     for seq in fasta:
         allSeqs += int(rpairsPerOrg) * [seq]
+    counter = 0 #For debugging
     for seq in allSeqs:
+        counter += 1
+        print(" {0:.2f} percent remanining".format((float(counter)/len(allSeqs))*100))
         fnr = fandr(seq,readlen,over)
         fnrs.append(fnr)
     return fnrs
 
 def main():
-#    subsetfasta(multifasta,1000) #For subsetting the input
-
     if checkiffasta(multifasta):
         multifa = fixFormatting(multifasta)
-        createReads(multifa,rlen,thput,output,overlap)
+        r1r2s = createReads(multifa,rlen,thput,output,overlap)
+        #    subsetfasta(multifasta,1000) #For subsetting the input
 
 start_time = time.time()
 main()
