@@ -64,7 +64,7 @@ def createReads(fasta,readlen,tput,outfile,over): #Returns a list containing lis
     fnrs = []
     numOrg = len(fasta)
 #    numReads = (tput * 1000000000)/readlen
-    numReads = (tput * 100000000)/readlen #For debugging
+    numReads = (tput * 1000000000)/readlen #For debugging
     numSeeds = math.ceil(numReads/2)
     rpairsPerOrg = numSeeds/numOrg
     for seq in fasta:
@@ -72,7 +72,7 @@ def createReads(fasta,readlen,tput,outfile,over): #Returns a list containing lis
     counter = 0 #For debugging
     for seq in allSeqs:
         counter += 1
-        print(" {0:.2f} percent remanining".format((float(counter)/len(allSeqs))*100))
+        print("Run completion: {0:.2f} percent.".format((float(counter)/len(allSeqs))*100))
         fnr = fandr(seq,readlen,over)
         fnrs.append(fnr)
     return fnrs
