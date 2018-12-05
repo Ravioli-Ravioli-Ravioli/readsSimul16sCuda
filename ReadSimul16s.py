@@ -50,15 +50,15 @@ def fixFormatting(fasta):
     return fastas
 
 def seqRand(seq,rlen,overlap):
-    ampSize = (rlen - overlap) * 2
+    ampSize = ((rlen - overlap) * 2) + overlap
     headless = ''.join(seq.split("\n")[1:])
     seedStart = randint(0, len(headless) - ampSize)
     amp = headless[seedStart:seedStart + ampSize]
     forward = amp[0:rlen]
-    reverse = amp[-rlen:]
-    if len(amp) == 500:
-        print("Forward {0}".format(len(forward)))
-        print("Reverse {0}".format(len(reverse)))
+    reverse = amp[rlen - overlap:]
+    if len(amp) == 550:
+        print("Forward {0}".format(forward))
+        print("Reverse {0}".format(reverse))
 
 def randomShearing(fasta,readlen,tput,outfile,over):
     allSeqs = []
