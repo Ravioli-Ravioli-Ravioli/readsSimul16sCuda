@@ -63,8 +63,13 @@ def createReads(fasta,readlen,tput,outfile,over): #Returns a list containing lis
     allSeqs = []
     fnrs = []
     numOrg = len(fasta)
-#    numReads = (tput * 1000000000)/readlen
-    numReads = (tput * 1000000000)/readlen #For debugging
+    numReads = (tput * 1000000000)/readlen #1B
+#    numReads = (tput * 100000000)/readlen #100M
+#    numReads = (tput * 10000000)/readlen #10M
+#    numReads = (tput * 1000000)/readlen #1M
+#    numReads = (tput * 100000)/readlen #100K
+#    numReads = (tput * 10000)/readlen #10K
+#    numReads = (tput * 1000)/readlen #1K
     numSeeds = math.ceil(numReads/2)
     rpairsPerOrg = numSeeds/numOrg
     for seq in fasta:
