@@ -58,13 +58,15 @@ def fandri(seqlen,rlen,overlap):
     rend = rstart + rlen
     return [fstart, fend, rstart, rend]
 
-def create():
-    print("yes")
+def createFnR(stats,seq):
+    forwardseq = seq[stats[0]:stats[1]]
+    reverseseq = seq[stats[2]:stats[3]]
+    return [forwardseq,reverseseq]
 
 def createReads(fasta,readlen,tput,outfile,over): #Returns a list containing list containing forward and reverse sequences randomly generated
-    fnrs = []
     pairStats = []
     numOrg = len(fasta)
+    fnrs = []
 #    numReadPairs = math.ceil(((tput * 1000000000)/readlen)/2) #1B
 #    numReadPairs = math.ceil(((tput * 100000000)/readlen)/2) #100M
 #    numReadPairs = math.ceil(((tput * 10000000)/readlen)/2) #10M
@@ -72,14 +74,23 @@ def createReads(fasta,readlen,tput,outfile,over): #Returns a list containing lis
 #    numReadPairs = math.ceil(((tput * 100000)/readlen)/2) #100K
 #    numReadPairs = math.ceil(((tput * 10000)/readlen)/2) #10K
 #    numReadPairs = math.ceil(((tput * 1000)/readlen)/2) #1K
+    outputfile = open(outfile,"w")
     pairsPerOrg = math.ceil(numReadPairs/numOrg)
     for seq in fasta:
         headless = ''.join(seq.split("\n")[1:])
         seqlen = len(headless)
         if seqlen >= (readlen*2):
-            for i in range(0, pairsPerOrg): 
-                pairStats.append(fandri(seqlen,readlen,over))
-    print(len(pairStats))
+            for i in range(pairsPerOrg):
+                fnrs.append([fandri(seqlen,readlen,over),headless])
+
+    counter = 1
+    for statnseq in fnrs:
+        head = str(counter).zfill(6)
+        fnr = createFnR(statnseq[0],statnseq[1])
+        outputfile.write("@SRR123456.{0}:0:00:000:0000#ATCGAT/1\n{1}\n+\n".format(head,fnr[0]))
+        outputfile.write("@SRR123456.{0}:0:00:000:0000#ATCGAT/2\n{1}\n+\n".format(head,fnr[1]))
+        counter += 1
+    outputfile.close()
 
 def main():
     if checkiffasta(multifasta):
